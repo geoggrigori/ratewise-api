@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-label="ratewise-api - Token-bucket rate limiting for Express APIs">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6B2FB5"/>
+      <stop offset="100%" stop-color="#4A1E86"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="300" rx="24" fill="url(#bg)"/>
+  <g font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" text-anchor="middle">
+    <text x="600" y="135" fill="#FFFFFF" font-size="78" font-weight="700" letter-spacing="1">ratewise-api</text>
+    <text x="600" y="190" fill="#EDE4FA" font-size="32" font-weight="400">Token-bucket rate limiting for Express APIs</text>
+    <text x="600" y="240" fill="#C9B3E8" font-size="22" font-weight="500" letter-spacing="2">TypeScript &#183; Express &#183; Vitest</text>
+  </g>
+</svg>
