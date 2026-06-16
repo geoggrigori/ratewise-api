@@ -1,5 +1,7 @@
 ![ratewise-api](assets/banner.svg)
 
+[![CI](https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml/badge.svg)](https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml)
+
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Vitest](https://img.shields.io/badge/Vitest-2.x-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
