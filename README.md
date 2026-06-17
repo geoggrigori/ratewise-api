@@ -17,8 +17,9 @@ implemented as reusable, strictly-typed Express middleware.
 - **Reusable middleware** — drop `tokenBucket()` into any Express app.
 - **Per-client buckets** — keyed by the `x-api-key` header when present, otherwise
   by client IP.
-- **Standard headers** — `X-RateLimit-Limit` and `X-RateLimit-Remaining` on every
-  response; `Retry-After` plus a structured JSON error on `429`.
+- **Standard headers** — `X-RateLimit-Limit`, `X-RateLimit-Remaining` and
+  `X-RateLimit-Reset` on every response; `Retry-After` plus a structured JSON error
+  on `429`.
 - **Strict TypeScript** — `strict` mode with `noUncheckedIndexedAccess`.
 - **Fully tested** — Vitest + supertest, including deterministic refill tests via an
   injectable clock.
@@ -37,7 +38,7 @@ sequenceDiagram
 
     alt tokens >= 1 (allowed)
         M->>M: Consume 1 token
-        M-->>C: X-RateLimit-Limit / X-RateLimit-Remaining
+        M-->>C: X-RateLimit-Limit / Remaining / Reset
         M->>H: next()
         H-->>C: 200 OK + JSON quote
     else bucket empty (denied)
@@ -83,6 +84,7 @@ curl -i http://localhost:3000/api/quote
 HTTP/1.1 200 OK
 X-RateLimit-Limit: 10
 X-RateLimit-Remaining: 9
+X-RateLimit-Reset: 1750000000
 Content-Type: application/json
 
 {
@@ -105,6 +107,7 @@ Once the bucket is empty you receive a `429`:
 HTTP/1.1 429 Too Many Requests
 X-RateLimit-Limit: 10
 X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1750000001
 Retry-After: 1
 Content-Type: application/json
 
@@ -126,6 +129,17 @@ curl -i http://localhost:3000/health
 ```json
 { "status": "ok" }
 ```
+
+## Response headers
+
+The middleware sets the following headers on every response:
+
+| Header                  | Sent on    | Description                                                                                                   |
+| ----------------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| `X-RateLimit-Limit`     | all        | The bucket capacity (largest allowed burst).                                                                 |
+| `X-RateLimit-Remaining` | all        | Whole tokens left after the current request.                                                                 |
+| `X-RateLimit-Reset`     | all        | UNIX epoch in **seconds** when the bucket will next have at least one token. Equals "now" when one is already available. |
+| `Retry-After`           | `429` only | Seconds the client should wait before retrying.                                                              |
 
 ## Configuration
 
