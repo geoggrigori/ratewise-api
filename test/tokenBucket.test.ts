@@ -78,6 +78,33 @@ describe('tokenBucket middleware', () => {
     expect(denied.headers['retry-after']).toBe('1');
   });
 
+  it('sets X-RateLimit-Reset on allowed responses to the current epoch second', async () => {
+    const clock = { value: 5_000 };
+    const app = buildApp({ capacity: 3, refillPerSecond: 1, clock });
+
+    const res = await request(app).get('/');
+    expect(res.status).toBe(200);
+    // 5_000 ms => epoch second 5; a token is available now, so reset is "now".
+    expect(res.headers['x-ratelimit-reset']).toBe('5');
+  });
+
+  it('sets X-RateLimit-Reset on 429 to when a token becomes available', async () => {
+    const clock = { value: 10_000 };
+    const app = buildApp({ capacity: 1, refillPerSecond: 1, clock });
+
+    // Drain the single token.
+    await request(app).get('/').expect(200);
+
+    const denied = await request(app).get('/');
+    expect(denied.status).toBe(429);
+    // now = 10s, need 1 token at 1/sec => reset 1s in the future.
+    expect(denied.headers['x-ratelimit-reset']).toBe('11');
+    // Reset and Retry-After must agree: reset === now + retryAfter.
+    expect(Number(denied.headers['x-ratelimit-reset'])).toBe(
+      10 + Number(denied.headers['retry-after']),
+    );
+  });
+
   it('refills tokens after waiting', async () => {
     const clock = { value: 0 };
     const app = buildApp({ capacity: 1, refillPerSecond: 2, clock });
