@@ -56,6 +56,9 @@ function defaultKeyGenerator(req: Request): string {
  * On every response the following headers are set:
  * - `X-RateLimit-Limit`: the bucket capacity.
  * - `X-RateLimit-Remaining`: whole tokens left after this request.
+ * - `X-RateLimit-Reset`: UNIX epoch (seconds) at which the bucket will have at
+ *   least one token available again. Equal to the current time when a token is
+ *   already available.
  *
  * @param options - Capacity, refill rate and optional injectables.
  * @returns An Express {@link RequestHandler}.
@@ -96,11 +99,15 @@ export function tokenBucket(options: TokenBucketOptions): RequestHandler {
       refill(bucket, currentTime);
     }
 
+    const currentTimeSeconds = Math.floor(currentTime / 1000);
+
     res.setHeader('X-RateLimit-Limit', String(capacity));
 
     if (bucket.tokens >= 1) {
       bucket.tokens -= 1;
       res.setHeader('X-RateLimit-Remaining', String(Math.floor(bucket.tokens)));
+      // A token is already available, so the bucket "resets" now.
+      res.setHeader('X-RateLimit-Reset', String(currentTimeSeconds));
       next();
       return;
     }
@@ -108,8 +115,10 @@ export function tokenBucket(options: TokenBucketOptions): RequestHandler {
     // Not enough tokens: compute how long until one token is available.
     const tokensNeeded = 1 - bucket.tokens;
     const retryAfterSeconds = Math.ceil(tokensNeeded / refillPerSecond);
+    const resetSeconds = currentTimeSeconds + retryAfterSeconds;
 
     res.setHeader('X-RateLimit-Remaining', '0');
+    res.setHeader('X-RateLimit-Reset', String(resetSeconds));
     res.setHeader('Retry-After', String(retryAfterSeconds));
     res.status(429).json({
       error: {
