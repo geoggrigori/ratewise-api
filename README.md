@@ -10,10 +10,6 @@
 <a href="README.es.md"><img src="https://img.shields.io/badge/Español-555555?style=for-the-badge" alt="Español"/></a>
 </div>
 
-<div align="center">
-  <img src="assets/banner.svg" width="100%" alt="ratewise-api"/>
-</div>
-
 <h1 align="center">ratewise-api</h1>
 <p align="center"><em>Middleware Express de rate limiting (token bucket), com pegada de produção</em></p>
 <p align="center"><strong>Bucket por cliente → refill lazy → headers padrão → 429 estruturado</strong></p>
