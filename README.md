@@ -1,170 +1,119 @@
-![ratewise-api](assets/banner.svg)
+<!-- ══════════════════════════ TÍTULO ══════════════════════════ -->
+<div align="center">
+  <img src="docs/title-banner.svg" width="100%" alt="ratewise-api"/>
+</div>
 
-[![CI](https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml/badge.svg)](https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml)
+<!-- ══════════════════════ IDIOMAS / LANGUAGES ══════════════════════ -->
+<div align="center">
+<a href="README.md"><img src="https://img.shields.io/badge/Português-1987F0?style=for-the-badge" alt="Português"/></a>
+<a href="README.en.md"><img src="https://img.shields.io/badge/English-555555?style=for-the-badge" alt="English"/></a>
+<a href="README.es.md"><img src="https://img.shields.io/badge/Español-555555?style=for-the-badge" alt="Español"/></a>
+</div>
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
-[![Vitest](https://img.shields.io/badge/Vitest-2.x-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-6B2FB5.svg)](LICENSE)
+<div align="center">
+  <img src="assets/banner.svg" width="100%" alt="ratewise-api"/>
+</div>
 
-A small, production-grade HTTP API that demonstrates a **token-bucket rate limiter**
-implemented as reusable, strictly-typed Express middleware.
+<h1 align="center">ratewise-api</h1>
+<p align="center"><em>Middleware Express de rate limiting (token bucket), com pegada de produção</em></p>
+<p align="center"><strong>Bucket por cliente → refill lazy → headers padrão → 429 estruturado</strong></p>
 
-## Features
+<div align="center">
+<a href="https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml"><img src="https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
+<img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="ts"/>
+<img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white" alt="express"/>
+<img src="https://img.shields.io/badge/Vitest-6E9F18?style=flat-square&logo=vitest&logoColor=white" alt="vitest"/>
+<img src="https://img.shields.io/badge/License-MIT-2E7D32?style=flat-square" alt="license"/>
+</div>
 
-- **Token-bucket algorithm** — smooth bursts up to a configurable capacity with a
-  steady refill rate, computed lazily so there are no background timers.
-- **Reusable middleware** — drop `tokenBucket()` into any Express app.
-- **Per-client buckets** — keyed by the `x-api-key` header when present, otherwise
-  by client IP.
-- **Standard headers** — `X-RateLimit-Limit`, `X-RateLimit-Remaining` and
-  `X-RateLimit-Reset` on every response; `Retry-After` plus a structured JSON error
-  on `429`.
-- **Strict TypeScript** — `strict` mode with `noUncheckedIndexedAccess`.
-- **Fully tested** — Vitest + supertest, including deterministic refill tests via an
-  injectable clock.
+<div align="center">
+<a href="#sobre"><img src="https://img.shields.io/badge/▸_SOBRE-1987F0?style=for-the-badge" alt="sobre"/></a>
+<a href="#como-funciona"><img src="https://img.shields.io/badge/▸_COMO_FUNCIONA-000000?style=for-the-badge" alt="funciona"/></a>
+<a href="#uso"><img src="https://img.shields.io/badge/▸_USO-1987F0?style=for-the-badge" alt="uso"/></a>
+<a href="#configuração"><img src="https://img.shields.io/badge/▸_CONFIGURAÇÃO-000000?style=for-the-badge" alt="config"/></a>
+</div>
 
-## How it works
+<br/>
+
+> ⚙️ **Sem timers em background.** O refill é calculado de forma preguiçosa (lazy) a cada requisição.
+
+## Sobre
+
+Uma API HTTP pequena, com pegada de produção, que demonstra um **rate limiter token-bucket** implementado como middleware Express reutilizável e estritamente tipado.
+
+**Destaques:**
+- **Algoritmo token-bucket** — suaviza rajadas até uma capacidade configurável, com taxa de refill constante.
+- **Middleware reutilizável** — `tokenBucket()` plugável em qualquer app Express.
+- **Buckets por cliente** — chaveado pelo header `x-api-key` quando presente, senão pelo IP.
+- **Headers padrão** — `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` em toda resposta; `Retry-After` + erro JSON estruturado no `429`.
+- **TypeScript estrito** — modo `strict` com `noUncheckedIndexedAccess`.
+- **Totalmente testado** — Vitest + supertest, com testes determinísticos de refill via clock injetável.
+
+## Como Funciona
 
 ```mermaid
 sequenceDiagram
-    participant C as Client
-    participant M as tokenBucket middleware
+    participant C as Cliente
+    participant M as middleware tokenBucket
     participant H as Route handler
 
     C->>M: GET /api/quote
-    M->>M: Resolve client key (x-api-key or IP)
-    M->>M: Refill bucket by elapsed time
+    M->>M: Resolve chave do cliente (x-api-key ou IP)
+    M->>M: Refill do bucket pelo tempo decorrido
 
-    alt tokens >= 1 (allowed)
-        M->>M: Consume 1 token
+    alt tokens >= 1 (permitido)
+        M->>M: Consome 1 token
         M-->>C: X-RateLimit-Limit / Remaining / Reset
         M->>H: next()
-        H-->>C: 200 OK + JSON quote
-    else bucket empty (denied)
+        H-->>C: 200 OK + JSON
+    else bucket vazio (negado)
         M-->>C: 429 Too Many Requests
-        Note over M,C: Retry-After + JSON error body
+        Note over M,C: Retry-After + corpo de erro JSON
     end
 ```
 
-## Installation
+## Uso
 
 ```bash
 git clone https://github.com/geoggrigori/ratewise-api.git
 cd ratewise-api
 npm install
+npm run dev      # modo watch
 ```
 
-## Usage
-
-Run the server in watch mode for development:
-
-```bash
-npm run dev
-```
-
-Or build and run the compiled output:
-
-```bash
-npm run build
-npm start
-```
-
-The server starts on `http://localhost:3000` by default.
-
-### Example requests
-
-A successful request to the rate-limited endpoint:
-
+**Exemplo:**
 ```bash
 curl -i http://localhost:3000/api/quote
 ```
-
 ```http
 HTTP/1.1 200 OK
 X-RateLimit-Limit: 10
 X-RateLimit-Remaining: 9
 X-RateLimit-Reset: 1750000000
-Content-Type: application/json
-
-{
-  "quote": {
-    "text": "Make it work, make it right, make it fast.",
-    "author": "Kent Beck"
-  }
-}
 ```
 
-Send an API key to get your own bucket:
+Com bucket vazio, retorna `429` com `Retry-After` e corpo JSON estruturado. O endpoint `/health` nunca é rate-limited.
 
-```bash
-curl -i -H "x-api-key: my-secret-key" http://localhost:3000/api/quote
-```
+## Configuração
 
-Once the bucket is empty you receive a `429`:
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `PORT` | `3000` | Porta do servidor HTTP |
+| `RATE_CAPACITY` | `10` | Máximo de tokens por bucket (maior rajada permitida) |
+| `RATE_REFILL` | `1` | Tokens reabastecidos por segundo |
 
-```http
-HTTP/1.1 429 Too Many Requests
-X-RateLimit-Limit: 10
-X-RateLimit-Remaining: 0
-X-RateLimit-Reset: 1750000001
-Retry-After: 1
-Content-Type: application/json
-
-{
-  "error": {
-    "code": "rate_limit_exceeded",
-    "message": "Too many requests. Please slow down and retry later.",
-    "retryAfter": 1
-  }
-}
-```
-
-The health endpoint is never rate-limited:
-
-```bash
-curl -i http://localhost:3000/health
-```
-
-```json
-{ "status": "ok" }
-```
-
-## Response headers
-
-The middleware sets the following headers on every response:
-
-| Header                  | Sent on    | Description                                                                                                   |
-| ----------------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
-| `X-RateLimit-Limit`     | all        | The bucket capacity (largest allowed burst).                                                                 |
-| `X-RateLimit-Remaining` | all        | Whole tokens left after the current request.                                                                 |
-| `X-RateLimit-Reset`     | all        | UNIX epoch in **seconds** when the bucket will next have at least one token. Equals "now" when one is already available. |
-| `Retry-After`           | `429` only | Seconds the client should wait before retrying.                                                              |
-
-## Configuration
-
-All configuration is provided through environment variables (see `.env.example`):
-
-| Variable        | Default | Description                                         |
-| --------------- | ------- | --------------------------------------------------- |
-| `PORT`          | `3000`  | Port the HTTP server listens on.                    |
-| `RATE_CAPACITY` | `10`    | Maximum tokens per bucket (largest allowed burst).  |
-| `RATE_REFILL`   | `1`     | Tokens refilled per second (sustained request rate).|
-
-## Running tests
-
+**Testes:**
 ```bash
 npm test
+npm run test:coverage   # relatório HTML em coverage/
 ```
 
-Run them in watch mode with `npm run test:watch`, or generate a coverage report with:
+## Licença
 
-```bash
-npm run test:coverage
-```
+[MIT](LICENSE).
 
-Coverage uses the V8 provider and writes an HTML report to `coverage/`.
+<div align="center">
+  <img src="https://file.loading.io/color/feature/thumb/Blues-8.png?" width="100%" height="10px" alt="divider"/>
+</div>
 
-## License
-
-[MIT](LICENSE) © 2026 Geovana Grigorio
+<p align="center"><sub>Desenvolvido por <strong><a href="https://github.com/geoggrigori">Grigori</a></strong> · 2026</sub></p>
