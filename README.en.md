@@ -10,8 +10,6 @@
 <a href="README.es.md"><img src="https://img.shields.io/badge/Español-555555?style=for-the-badge" alt="Español"/></a>
 </div>
 
-![ratewise-api](assets/banner.svg)
-
 [![CI](https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml/badge.svg)](https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml)
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
