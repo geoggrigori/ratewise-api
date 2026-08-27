@@ -14,10 +14,6 @@
 
 <br/>
 
-<h1 align="center">ratewise-api</h1>
-<p align="center"><em>Middleware Express de rate limiting (token bucket), de nivel producción</em></p>
-<p align="center"><strong>Bucket por cliente → refill lazy → headers estándar → 429 estructurado</strong></p>
-
 <div align="center">
 <a href="https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml"><img src="https://github.com/geoggrigori/ratewise-api/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
 <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="ts"/>
